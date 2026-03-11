@@ -67,7 +67,7 @@ export default function PlanPage() {
     <div style={{ paddingTop: 24 }}>
       <div style={{ padding: "0 16px 16px" }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>My Wellness Plan</h1>
-        <p style={{ color: "var(--text-faint)", fontSize: 13 }}>22 yr • 66 kg • Delhi/Haryana • Summer 2025</p>
+        <p style={{ color: "var(--text-faint)", fontSize: 13 }}>22 yr • 66 kg • North India • Summer 2026</p>
       </div>
 
       {/* Scrollable tabs */}
