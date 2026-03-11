@@ -1,0 +1,14 @@
+{
+  "name": "My Wellness Plan",
+  "short_name": "Wellness",
+  "description": "Personal wellness tracker — fitness, sleep, skincare & diet",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF9",
+  "theme_color": "#E8845A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

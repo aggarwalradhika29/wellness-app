@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #FAFAF9;
+  --bg2: #F5EFE6;
+  --card: #FFFFFF;
+  --card-border: #F0EAE2;
+  --text: #1C1A18;
+  --text-muted: #7A6E64;
+  --text-faint: #A09890;
+  --accent: #E8845A;
+  --green: #6BAA75;
+  --blue: #5A8BE8;
+  --shadow: 0 1px 8px rgba(0,0,0,0.06);
+  --nav-bg: #FFFFFF;
+  --nav-border: #F0EAE2;
+  --input-bg: #FFFFFF;
+  --input-border: #F0EAE2;
+}
+
+.dark {
+  --bg: #0F0E0D;
+  --bg2: #1A1816;
+  --card: #1E1C1A;
+  --card-border: #2E2C2A;
+  --text: #F0EAE2;
+  --text-muted: #A09890;
+  --text-faint: #6A6058;
+  --accent: #E8845A;
+  --green: #6BAA75;
+  --blue: #5A8BE8;
+  --shadow: 0 1px 12px rgba(0,0,0,0.4);
+  --nav-bg: #1A1816;
+  --nav-border: #2E2C2A;
+  --input-bg: #252320;
+  --input-border: #2E2C2A;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s, color 0.25s;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+}
+
+input, textarea, select {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text) !important;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 99px; }
+
+.dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
