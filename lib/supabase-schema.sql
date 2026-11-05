@@ -57,15 +57,15 @@ create table if not exists user_profile (
   updated_at timestamptz default now()
 );
 
--- Enable Row Level Security (open policy since we use anonymous user IDs)
+-- Row Level Security: each row is visible only to the signed-in user who owns it
 alter table habit_logs enable row level security;
 alter table sleep_logs enable row level security;
 alter table weight_logs enable row level security;
 alter table meal_logs enable row level security;
 alter table user_profile enable row level security;
 
-create policy "allow all" on habit_logs for all using (true) with check (true);
-create policy "allow all" on sleep_logs for all using (true) with check (true);
-create policy "allow all" on weight_logs for all using (true) with check (true);
-create policy "allow all" on meal_logs for all using (true) with check (true);
-create policy "allow all" on user_profile for all using (true) with check (true);
+create policy "owner only" on habit_logs for all to authenticated using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);
+create policy "owner only" on sleep_logs for all to authenticated using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);
+create policy "owner only" on weight_logs for all to authenticated using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);
+create policy "owner only" on meal_logs for all to authenticated using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);
+create policy "owner only" on user_profile for all to authenticated using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);

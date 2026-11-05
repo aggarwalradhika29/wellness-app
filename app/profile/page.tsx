@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { getUserProfile, saveUserProfile, getWeightLogs, calcBMI, bmiCategory, UserProfile, WeightLog } from "@/lib/db";
 
 export default function ProfilePage() {
@@ -138,6 +139,9 @@ export default function ProfilePage() {
         </div>
         <button onClick={handleSave} style={{ width: "100%", background: "var(--accent)", color: "white", fontWeight: 700, padding: 12, borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>
           Save Profile
+        </button>
+        <button onClick={() => supabase.auth.signOut()} style={{ width: "100%", background: "transparent", color: "var(--text-faint)", fontWeight: 600, padding: 10, marginTop: 8, borderRadius: 12, border: "1px solid var(--card-border)", cursor: "pointer", fontSize: 13 }}>
+          Sign out
         </button>
       </div>
 

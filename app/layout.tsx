@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import AuthGate from "@/components/AuthGate";
 
 export const metadata: Metadata = {
   title: "Wellness — My Daily Plan",
@@ -38,10 +39,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ background: 'var(--bg)', color: 'var(--text)' }} className="antialiased">
         <ThemeProvider>
-          <main className="max-w-lg mx-auto pb-24 min-h-screen">
-            {children}
-          </main>
-          <BottomNav />
+          <AuthGate>
+            <main className="max-w-lg mx-auto pb-24 min-h-screen">
+              {children}
+            </main>
+            <BottomNav />
+          </AuthGate>
         </ThemeProvider>
       </body>
     </html>

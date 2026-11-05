@@ -12,14 +12,20 @@ const PLAN_TABS: { key: PlanTab; label: string; icon: string }[] = [
   { key: "schedule", label: "Schedule", icon: "🗓️" },
 ];
 
+const WARM_UP = "Warm-up indoors — 5 min (cold muscles need longer)";
+const FINISH = "Skipping — 5 min, 30 sec on / 30 sec off";
+
+const WORKOUT_A = [WARM_UP, "3 rounds: Squats — 12", "Incline push-ups — 8", "Resistance band rows — 12", "Glute bridges — 15", "Plank — 20–30 sec", FINISH];
+const WORKOUT_B = [WARM_UP, "3 rounds: Reverse lunges — 10 each leg", "Dumbbell press — 12", "Dumbbell deadlifts — 12", "Band pull-aparts — 15", "Dead bugs — 8 each side", FINISH];
+
 const WEEK = [
-  { day: "Monday", type: "Full Body", color: "#6BAA75", exercises: ["Jump Rope Warm-up — 5 min","Squats — 3×15 (hold dumbbells)","Push-ups — 3×10–12","Resistance Band Rows — 3×15","Reverse Lunges — 3×10 each leg","Dumbbell Bicep Curls — 3×12","Plank — 3×30 sec","Cool-down stretch — 5 min"] },
-  { day: "Tuesday", type: "Walk", color: "#5A8BE8", exercises: ["Morning Park Walk — 30–45 min","Light stretching on yoga mat — 10 min","Tip: No earphones for first 10 min, just breathe"] },
-  { day: "Wednesday", type: "HIIT + Cardio", color: "#E8845A", exercises: ["Jump Rope — 3×3 min with 1 min rest","Burpees — 3×8","High Knees — 3×30 sec","Sumo Squats — 3×15 (inner thighs)","Resistance Band Lateral Walks — 3×12 each side","Mountain Climbers — 3×20","Tricep Dips — 3×12 using chair"] },
-  { day: "Thursday", type: "Walk + Yoga", color: "#9B7EC8", exercises: ["Evening Park Walk — 30 min","Yoga: child's pose, cat-cow, pigeon, legs-up-wall","4-7-8 breathing — 5 min before sleep"] },
-  { day: "Friday", type: "Upper Body", color: "#6BAA75", exercises: ["Resistance Band Overhead Press — 3×12","Dumbbell Lateral Raises — 3×12","Push-up Variations — 3×10 (wide, narrow, diamond)","Dumbbell Hammer Curls — 3×12","Tricep Kickbacks — 3×12 (targets arm flab)","Resistance Band Pull-Apart — 3×15"] },
-  { day: "Saturday", type: "Lower Body", color: "#E8845A", exercises: ["Jump Rope Warm-up — 5 min","Bulgarian Split Squats — 3×10 each leg","Resistance Band Squats — 3×15","Glute Bridges — 3×15","Resistance Band Clamshells — 3×15 each side","Calf Raises — 3×20","Cool-down: pigeon pose, quad stretch — 5 min"] },
-  { day: "Sunday", type: "Rest", color: "#A09890", exercises: ["Full rest day","Optional: 20-min gentle walk","Focus: meal prep, good sleep, relax intentionally"] },
+  { day: "Monday", type: "Workout A", color: "#6BAA75", exercises: WORKOUT_A },
+  { day: "Tuesday", type: "Walk", color: "#5A8BE8", exercises: ["20-min walk after lunch", "Check AQI first. Above 200, walk indoors or use the stairs"] },
+  { day: "Wednesday", type: "Workout B", color: "#E8845A", exercises: WORKOUT_B },
+  { day: "Thursday", type: "Walk + Yoga", color: "#9B7EC8", exercises: ["20-min walk after lunch", "Yoga before bed: child's pose, cat-cow, legs-up-wall"] },
+  { day: "Friday", type: "Workout A", color: "#6BAA75", exercises: WORKOUT_A },
+  { day: "Saturday", type: "Walk", color: "#5A8BE8", exercises: ["20-min walk after lunch", "Check AQI first. Above 200, walk indoors or use the stairs"] },
+  { day: "Sunday", type: "Rest", color: "#A09890", exercises: ["Full rest day", "Plan the week's meals", "Weekly average weight check"] },
 ];
 
 function WorkoutDay({ day, type, color, exercises }: typeof WEEK[0]) {
@@ -67,7 +73,7 @@ export default function PlanPage() {
     <div style={{ paddingTop: 24 }}>
       <div style={{ padding: "0 16px 16px" }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>My Wellness Plan</h1>
-        <p style={{ color: "var(--text-faint)", fontSize: 13 }}>22 yr • 66 kg • North India • Summer 2026</p>
+        <p style={{ color: "var(--text-faint)", fontSize: 13 }}>Gurgaon • Winter 2026–27</p>
       </div>
 
       {/* Scrollable tabs */}
@@ -87,12 +93,12 @@ export default function PlanPage() {
         {tab === "overview" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="card" style={{ padding: 16, border: "1px solid var(--accent)44" }}>
-              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 8 }}>The Core Insight</h3>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, margin: 0 }}>Everything — the 3 AM sleep, fatigue, eczema, skipped skincare — is one interconnected loop. <strong style={{ color: "var(--text)" }}>Fix sleep first, and the rest follows.</strong></p>
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 8 }}>This Winter</h3>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, margin: 0 }}>Dry air, heaters, smog and short days all push you indoors and off routine. <strong style={{ color: "var(--text)" }}>The goal is simple: move, protect your skin, and keep logging.</strong> Target: 64.3 kg by Dec 31.</p>
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Your 3 Non-Negotiables</h3>
-              {[["Sleep by 12:30 AM — phone outside bedroom", "var(--blue)"],["Bath + skincare every morning (5 min min.)", "var(--green)"],["Dinner by 7:30 PM, nothing after 10 PM", "var(--accent)"]].map(([text, color], i) => (
+              {[["Moisturise within 3 min of every shower", "var(--green)"],["Workout Mon, Wed, Fri at 9 AM — indoors", "var(--accent)"],["Weigh in 3–4 mornings a week", "var(--blue)"]].map(([text, color], i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: color, color: "white", fontWeight: 900, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i+1}</div>
                   <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", paddingTop: 3 }}>{text}</span>
@@ -100,8 +106,8 @@ export default function PlanPage() {
               ))}
             </div>
             <div className="card" style={{ padding: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Why Your Eczema Keeps Flaring</h3>
-              {[["😴","Sleep deprivation","Raises cortisol → triggers inflammation"],["🚿","Skipping baths","Summer sweat on skin = direct trigger"],["📱","Late night scrolling","Stress + blue light → flares"],["🍟","Irregular/fried food","Gut inflammation = skin inflammation"]].map(([icon,title,desc]) => (
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Winter Eczema Triggers</h3>
+              {[["🌬️","Cold, dry air","Pulls moisture out of your skin"],["🔥","Room heaters","Dry the air indoors. Keep some distance from them"],["🚿","Long, hot showers","Strip the skin barrier. Keep them short and lukewarm"],["🧶","Wool on bare skin","Wear a soft cotton layer underneath"],["😴","Poor sleep and stress","Can make flares and itching worse"]].map(([icon,title,desc]) => (
                 <div key={title as string} style={{ display: "flex", gap: 12, marginBottom: 10 }}>
                   <span style={{ fontSize: 20 }}>{icon}</span>
                   <div><p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)", margin: 0 }}>{title as string}</p><p style={{ fontSize: 12, color: "var(--text-faint)", margin: "2px 0 0" }}>{desc as string}</p></div>
@@ -114,31 +120,20 @@ export default function PlanPage() {
         {tab === "sleep" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: "#0D1B2A", borderRadius: 16, padding: 16 }}>
-              <p style={{ color: "#8BB8E8", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", margin: "0 0 8px" }}>The Science</p>
-              <p style={{ color: "#C8D8E8", fontSize: 13, lineHeight: 1.6, margin: 0 }}>You have <strong style={{ color: "white" }}>delayed sleep phase</strong> — your melatonin has shifted late. Fix it by shifting bedtime 30 min earlier every 2 weeks + morning light exposure.</p>
-            </div>
-            <div className="card" style={{ padding: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Phase Shift Plan</h3>
-              {[["Week 1–2","Sleep 2:30 AM → Wake 9:30 AM"],["Week 3–4","Sleep 1:30 AM → Wake 8:00 AM"],["Week 5–6","Sleep 12:30 AM → Wake 7:00 AM"],["Week 7+","Sleep 11:30 PM → Wake 6:00 AM ✓"]].map(([week,target]) => (
-                <div key={week as string} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--card-border)" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>{week as string}</span>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>{target as string}</span>
-                </div>
-              ))}
-              <p style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 10 }}>⚠️ Wake at target time EVERY day — even if you slept at 3 AM.</p>
+              <p style={{ color: "#8BB8E8", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", margin: "0 0 8px" }}>Winter Target</p>
+              <p style={{ color: "#C8D8E8", fontSize: 13, lineHeight: 1.6, margin: 0 }}>Sleep at <strong style={{ color: "white" }}>1:00 AM</strong>, wake at <strong style={{ color: "white" }}>8:30 AM</strong>. Keep the wake time steady, even on cold mornings.</p>
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Evening Wind-Down</h3>
-              <Block time="10:00" text="Dim all lights" note="Bright light after 10 PM kills melatonin" color="#9B7EC8" />
-              <Block time="11:30" text="Work calls end — hard stop" color="var(--text-faint)" />
-              <Block time="11:35" text="Night skincare (5 min)" note="Do this BEFORE opening any app" color="#9B7EC8" />
-              <Block time="11:45" text="No reels/YouTube" note="Music, podcast, or reading only" color="#9B7EC8" />
-              <Block time="11:55" text="4-7-8 Breathing in bed" note="Inhale 4s, hold 7s, exhale 8s. Repeat 4–6x." color="var(--blue)" />
-              <Block time="12:00" text="Phone on charge — outside room" color="var(--blue)" />
+              <Block time="11:30" text="Work ends — hard stop" color="var(--text-faint)" />
+              <Block time="12:00" text="Laptop down, night skincare" note="Do this before relaxing, so it doesn't get skipped" color="#9B7EC8" />
+              <Block time="12:05" text="OTT wind-down" note="Protected time, not optional" color="#9B7EC8" />
+              <Block time="12:55" text="Phone outside the bedroom" color="var(--blue)" />
+              <Block time="1:00" text="Lights off, 4-7-8 breathing" note="Inhale 4s, hold 7s, exhale 8s. Repeat 4–6x." color="var(--blue)" />
             </div>
             <div className="card" style={{ padding: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 10 }}>Natural Sleep Aids</h3>
-              {[["Ashwagandha","250mg with warm milk at night — lowers cortisol"],["Chamomile Tea","One cup at 10 PM — gentle, effective"],["Turmeric Milk","Anti-inflammatory — helps sleep + eczema"],["Banana","Magnesium + tryptophan — eat at dinner"]].map(([item,desc]) => (
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 10 }}>Cold-Weather Sleep</h3>
+              {[["Heater","Warm the room before bed, then switch it off. It dries your skin and the air overnight"],["Bedding","Cotton sheets, with a layer between skin and any wool blanket"],["Air","A clean humidifier can help if your room feels very dry"],["Morning light","Open the curtains on waking. Get outside around midday when it's clearer"],["Warm drink","Chamomile tea or haldi milk, not a late chai"]].map(([item,desc]) => (
                 <div key={item as string} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <span style={{ color: "var(--green)", fontWeight: 700 }}>→</span>
                   <div><span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{item as string}: </span><span style={{ fontSize: 13, color: "var(--text-muted)" }}>{desc as string}</span></div>
@@ -151,18 +146,18 @@ export default function PlanPage() {
         {tab === "fitness" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="card" style={{ padding: 16, border: "1px solid rgba(107,170,117,0.3)", background: "rgba(107,170,117,0.06)" }}>
-              <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, margin: 0 }}>With rope + resistance band + 2.5kg dumbbells + yoga mat — you have everything. <strong>Consistency beats intensity.</strong></p>
+              <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, margin: 0 }}>Your workouts are all indoors, so fog and smog can't cancel them. <strong>Consistency beats intensity.</strong> Add 1–2 reps each week.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <div className="card" style={{ padding: 14, textAlign: "center" }}>
-                <p style={{ color: "var(--text-faint)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 4px" }}>Morning</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--accent)", margin: 0 }}>7–9 AM</p>
-                <p style={{ fontSize: 10, color: "var(--text-faint)", margin: "2px 0 0" }}>Mon, Wed, Fri, Sat</p>
+                <p style={{ color: "var(--text-faint)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 4px" }}>Workout</p>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--accent)", margin: 0 }}>9:00–9:40 AM</p>
+                <p style={{ fontSize: 10, color: "var(--text-faint)", margin: "2px 0 0" }}>Mon, Wed, Fri</p>
               </div>
               <div className="card" style={{ padding: 14, textAlign: "center" }}>
-                <p style={{ color: "var(--text-faint)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 4px" }}>Evening</p>
-                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--blue)", margin: 0 }}>6–8 PM</p>
-                <p style={{ fontSize: 10, color: "var(--text-faint)", margin: "2px 0 0" }}>Tue, Thu (walks)</p>
+                <p style={{ color: "var(--text-faint)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 4px" }}>Walk</p>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "var(--blue)", margin: 0 }}>After lunch</p>
+                <p style={{ fontSize: 10, color: "var(--text-faint)", margin: "2px 0 0" }}>Tue, Thu, Sat</p>
               </div>
             </div>
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Weekly Plan (tap to expand)</p>
@@ -175,13 +170,12 @@ export default function PlanPage() {
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 14 }}>Daily Meal Plan</h3>
               {[
-                { time:"7:00",icon:"🫖",label:"Wake-up",text:"Warm lemon water / jeera water (empty stomach)"},
-                { time:"8:00",icon:"🥣",label:"Breakfast",text:"Moong dal chilla / Poha + peanuts / Oats upma + curd"},
-                { time:"10:30",icon:"🍌",label:"Snack",text:"Banana or apple, or soaked almonds (8–10)"},
-                { time:"1:00 PM",icon:"🍛",label:"Lunch",text:"2 rotis + dal + sabzi + curd + salad (biggest meal)"},
-                { time:"4:00 PM",icon:"☕",label:"Snack",text:"Roasted chana, makhana, sprouts, or green tea"},
-                { time:"7:00 PM",icon:"🫘",label:"Dinner",text:"1–2 rotis + light sabzi + dal. Done by 7:30 PM."},
-                { time:"9:30 PM",icon:"🥛",label:"Optional",text:"Warm turmeric milk + ashwagandha. Nothing after 10 PM."},
+                { time:"8:45",icon:"🫖",label:"Wake-up",text:"Warm water"},
+                { time:"10:00",icon:"🥣",label:"Breakfast",text:"Chai + 1 parantha + curd. Swap in moong chilla or sprouts on some days"},
+                { time:"1:30 PM",icon:"🍛",label:"Lunch",text:"Dal, chana or paneer first, then sabzi + salad, then 1–2 rotis or a little rice, plus dahi. Walk after"},
+                { time:"5:00 PM",icon:"☕",label:"Snack",text:"Chai with less sugar + roasted chana, guava or an orange"},
+                { time:"7:30 PM",icon:"🍲",label:"Dinner",text:"Same plate, a little lighter. Soup first if you're hungry. Done by 8 PM"},
+                { time:"Late",icon:"🥛",label:"Optional",text:"Chamomile tea or haldi milk. Nothing to eat after 10 PM"},
               ].map(m => (
                 <div key={m.time} style={{ display: "flex", gap: 12, paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid var(--card-border)" }}>
                   <span style={{ fontSize: 20 }}>{m.icon}</span>
@@ -196,17 +190,21 @@ export default function PlanPage() {
               ))}
             </div>
             <div className="card" style={{ padding: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Eczema Diet</h3>
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Winter Food</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <div>
                   <p style={{ color: "var(--green)", fontWeight: 700, fontSize: 12, marginBottom: 8 }}>✓ Eat More</p>
-                  {["Turmeric daily","Flaxseeds","Leafy greens","Curd/probiotics","Coconut water","Sweet potato"].map(i => <p key={i} style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>+ {i}</p>)}
+                  {["Palak, methi, sarson","Matar, gajar, mooli","Amla, oranges, guava","Sweet potato","Dal and veg soups","Curd, paneer, sprouts"].map(i => <p key={i} style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>+ {i}</p>)}
                 </div>
                 <div>
-                  <p style={{ color: "#E05050", fontWeight: 700, fontSize: 12, marginBottom: 8 }}>✗ Reduce</p>
-                  {["Spicy/oily food","Processed snacks","Maida items","Late night eating","Excess chai","Aerated drinks"].map(i => <p key={i} style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>− {i}</p>)}
+                  <p style={{ color: "#E05050", fontWeight: 700, fontSize: 12, marginBottom: 8 }}>✗ Keep Small</p>
+                  {["Gajar halwa, gajak","Pakoras, samosas","Extra ghee on paranthas","Peanuts by the bowl","Sugary chai","Wedding-buffet seconds"].map(i => <p key={i} style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>− {i}</p>)}
                 </div>
               </div>
+            </div>
+            <div className="card" style={{ padding: 16, background: "rgba(232,196,90,0.08)", border: "1px solid rgba(232,196,90,0.3)" }}>
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 8 }}>Planned Treats</h3>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>One serving of Maggi, or anything fried or maida-based, on <strong>Wed and Sat</strong>. Decide in advance, and keep less of it in the house.</p>
             </div>
           </div>
         )}
@@ -214,12 +212,12 @@ export default function PlanPage() {
         {tab === "skincare" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="card" style={{ padding: 16, border: "1px solid rgba(232,132,90,0.3)", background: "rgba(232,132,90,0.05)" }}>
-              <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, margin: 0 }}>Your products are excellent. The issue is <strong>doing it only when inflamed</strong>. Eczema needs prevention, not just treatment.</p>
+              <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7, margin: 0 }}>Winter makes eczema easier to trigger. Your products are fine, so the job is <strong>using them every day, not only when skin flares</strong>.</p>
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 4 }}>🌅 Morning Routine (7 min)</h3>
-              <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 12 }}>Trigger: Right after post-workout shower</p>
-              {[["1","Cetaphil Syndet Bar","Cleanse face + body, lukewarm water only","var(--accent)"],["2","CeraVe Moisturising Cream","Apply on DAMP skin within 3 min of shower","var(--accent)"],["3","Aveeno Dermexa Lotion","Layer on arms + eczema-prone areas","var(--accent)"],["4","ReEquil Sunscreen","Face, neck, hands before going out","var(--accent)"],["5","Vaseline","Lips","var(--accent)"]].map(([n,product,action,c]) => (
+              <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 12 }}>Trigger: Your morning shower</p>
+              {[["1","Aveeno Daily Moisturising Body Wash","Body, in a short 5–10 min lukewarm shower","var(--accent)"],["2","Cetaphil Gentle Cleanser","Face, with lukewarm water. Pat dry, don't rub","var(--accent)"],["3","CeraVe Moisturising Cream","Apply on DAMP skin within 3 min of shower","var(--accent)"],["4","Aveeno Dermexa Lotion","Layer on arms + eczema-prone areas","var(--accent)"],["5","ReEquil Sunscreen","Face, neck and hands before going out, even on foggy days","var(--accent)"],["6","Vaseline","Lips","var(--accent)"]].map(([n,product,action,c]) => (
                 <div key={n as string} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: c as string, color: "white", fontWeight: 900, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n as string}</div>
                   <div><p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)", margin: 0 }}>{product as string}</p><p style={{ fontSize: 12, color: "var(--text-faint)", margin: "2px 0 0" }}>{action as string}</p></div>
@@ -228,8 +226,8 @@ export default function PlanPage() {
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 4 }}>🌙 Night Routine (4 min)</h3>
-              <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 12 }}>Trigger: Immediately after 11:30 PM work calls end</p>
-              {[["1","Cetaphil Gentle Cleanser","Remove sweat + pollution + sunscreen","#9B7EC8"],["2","CeraVe or Aveeno","Alternate each night — apply on damp skin","#9B7EC8"],["3","Vaseline","Lips","#9B7EC8"]].map(([n,product,action,c]) => (
+              <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 12 }}>Trigger: When the laptop goes down at midnight</p>
+              {[["1","Cetaphil Gentle Cleanser","Remove pollution + sunscreen. Lukewarm water","#9B7EC8"],["2","CeraVe or Aveeno","Alternate each night, on slightly damp skin","#9B7EC8"],["3","Vaseline","Lips, plus a thin layer over very dry patches","#9B7EC8"]].map(([n,product,action,c]) => (
                 <div key={n as string} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: c as string, color: "white", fontWeight: 900, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n as string}</div>
                   <div><p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)", margin: 0 }}>{product as string}</p><p style={{ fontSize: 12, color: "var(--text-faint)", margin: "2px 0 0" }}>{action as string}</p></div>
@@ -238,8 +236,15 @@ export default function PlanPage() {
             </div>
             <div className="card" style={{ padding: 16, background: "rgba(232,196,90,0.08)", border: "1px solid rgba(232,196,90,0.3)" }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 8 }}>⚡ 2-Minute Minimum (bad days)</h3>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 6px" }}><strong>Morning:</strong> Cool water splash → CeraVe → Sunscreen → Lips</p>
-              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}><strong>Night:</strong> Water splash → CeraVe or Aveeno → Lips</p>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 6px" }}><strong>Morning:</strong> Lukewarm splash → CeraVe → Sunscreen if going out → Lips</p>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}><strong>Night:</strong> Lukewarm splash → CeraVe or Aveeno → Lips</p>
+            </div>
+            <div className="card" style={{ padding: 16 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 10 }}>All Day</h3>
+              {["Moisturise your hands after washing them","Reapply CeraVe to dry spots at midday","Wear soft cotton under wool and on your neck","Stay a little back from the heater","Wash with lukewarm water, even when it's freezing"].map(i => (
+                <p key={i} style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 6px" }}>→ {i}</p>
+              ))}
+              <p style={{ fontSize: 12, color: "var(--text-faint)", margin: "10px 0 0", lineHeight: 1.6 }}>See a doctor if skin cracks, oozes or spreads, or if itching keeps you awake. Keep using any prescribed treatment as directed.</p>
             </div>
           </div>
         )}
@@ -248,29 +253,29 @@ export default function PlanPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--accent)", marginBottom: 12 }}>Morning Block</h3>
-              <Block time="6:30" text="Wake up — get light immediately" note="Window/balcony. No phone for 10 min." color="var(--accent)" />
-              <Block time="6:35" text="Warm lemon water (500ml)" color="var(--accent)" />
-              <Block time="6:45" text="Workout / Park Walk" note="45–50 min workout or 30–40 min walk" color="var(--green)" />
-              <Block time="7:30" text="Shower immediately" note="Cool/lukewarm. Cetaphil bar." color="var(--accent)" />
-              <Block time="7:40" text="Morning skincare (7 min)" color="var(--accent)" />
-              <Block time="8:00" text="Breakfast" color="#E8C45A" />
+              <Block time="8:30" text="Wake up, open the curtains" note="No phone for 10 min. Warm water." color="var(--accent)" />
+              <Block time="9:00" text="Workout (Mon, Wed, Fri)" note="Other days: an easy start or extra prep" color="var(--green)" />
+              <Block time="9:40" text="Lukewarm shower + skincare" note="Moisturise within 3 min" color="var(--accent)" />
+              <Block time="10:00" text="Breakfast" color="#E8C45A" />
+              <Block time="10:15" text="Job search prep — 1 hour" note="One specific thing" color="var(--accent)" />
+              <Block time="11:15" text="R&D reading and deep work" color="var(--accent)" />
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text-muted)", marginBottom: 12 }}>Work Block</h3>
-              <Block time="11:00" text="Work begins" />
-              <Block time="1:00 PM" text="Lunch break (30–45 min)" color="#E8C45A" />
-              <Block time="4:00 PM" text="Snack break (15 min)" color="#E8C45A" />
-              <Block time="7:00 PM" text="Dinner — done by 7:30 PM" color="#E8C45A" />
-              <Block time="8:00 PM" text="Evening work calls" />
+              <Block time="12:00" text="Oddr work begins" />
+              <Block time="1:30 PM" text="Lunch" note="Walk after on Tue, Thu, Sat" color="#E8C45A" />
+              <Block time="5:00 PM" text="Chai + snack" color="#E8C45A" />
+              <Block time="6:30 PM" text="Break — stretch, get outside if AQI allows" color="var(--green)" />
+              <Block time="7:30 PM" text="Dinner — done by 8 PM" color="#E8C45A" />
+              <Block time="8:30 PM" text="Evening Oddr work" />
               <Block time="11:30 PM" text="Work ends — hard stop" />
             </div>
             <div className="card" style={{ padding: 16 }}>
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "#9B7EC8", marginBottom: 12 }}>Wind-Down Block</h3>
-              <Block time="11:30" text="Night skincare (5 min)" note="BEFORE opening any app" color="#9B7EC8" />
-              <Block time="11:40" text="Dim lights + Night mode" color="#9B7EC8" />
-              <Block time="11:50" text="No reels/social media" note="Music / podcast / book only" color="#9B7EC8" />
-              <Block time="11:55" text="4-7-8 breathing in bed" color="var(--blue)" />
-              <Block time="12:10" text="Lights off, phone outside room" color="var(--blue)" />
+              <Block time="12:00" text="Laptop down, night skincare" color="#9B7EC8" />
+              <Block time="12:05" text="OTT wind-down" color="#9B7EC8" />
+              <Block time="12:55" text="Phone outside the bedroom" color="var(--blue)" />
+              <Block time="1:00" text="Lights off" color="var(--blue)" />
             </div>
           </div>
         )}

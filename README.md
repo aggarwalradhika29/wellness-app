@@ -1,7 +1,7 @@
 # 🌿 My Wellness App
 
 A personal wellness tracker — fitness, sleep, skincare & diet plan.
-Built with Next.js 14 + Tailwind CSS. All data stored locally on your device (no login needed).
+Built with Next.js 14 + Tailwind CSS. Data is stored in Supabase behind a private login.
 
 ## Features
 - ✅ Daily habit tracker (workout, skincare AM/PM, dinner time, phone habits)

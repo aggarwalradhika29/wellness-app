@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
-import { getTodayHabits, saveHabits, HabitLog, getLast7Days, getHabits } from "@/lib/storage";
+import { useEffect, useRef, useState } from "react";
+import { todayHabits, saveHabit, HabitLog, getLast7Days, getHabits } from "@/lib/db";
 
 const HABITS = [
-  { key: "workout", label: "Workout done", icon: "💪", desc: "Any exercise — home workout, walk, yoga" },
+  { key: "workout", label: "Workout done", icon: "💪", desc: "Home workout, walk or yoga" },
   { key: "skincareAM", label: "Morning skincare", icon: "🌅", desc: "Cleanser → CeraVe → Aveeno → Sunscreen" },
   { key: "skincarePM", label: "Night skincare", icon: "🌙", desc: "Cleanser → Moisturiser → Lip care" },
-  { key: "dinner730", label: "Dinner by 7:30 PM", icon: "🍛", desc: "No eating after 10 PM" },
+  { key: "dinner730", label: "Dinner by 8 PM", icon: "🍛", desc: "No eating after 10 PM" },
   { key: "noPhoneInBed", label: "Phone outside bedroom", icon: "📵", desc: "Charge phone in another room" },
 ];
 
@@ -19,27 +19,36 @@ export default function HabitsPage() {
   const [saved, setSaved] = useState(false);
   const [history, setHistory] = useState<HabitLog[]>([]);
   const [last7, setLast7] = useState<string[]>([]);
+  const saves = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
-    setHabits(getTodayHabits());
     setLast7(getLast7Days());
-    setHistory(getHabits());
+    getHabits().then(all => {
+      setHabits(todayHabits(all));
+      setHistory(all);
+    });
   }, []);
+
+  // Keeps quick taps in order, so an older save can't overwrite a newer one.
+  function persist(log: HabitLog) {
+    setHabits(log);
+    setHistory(all => [...all.filter(h => h.date !== log.date), log]);
+    saves.current = saves.current.catch(() => {}).then(() => saveHabit(log));
+    return saves.current;
+  }
 
   function toggle(key: string) {
     if (!habits) return;
     const updated = { ...habits, [key]: !habits[key as keyof HabitLog] };
-    setHabits(updated as HabitLog);
-    saveHabits(updated as HabitLog);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    persist(updated as HabitLog).then(() => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    });
   }
 
   function setWater(n: number) {
     if (!habits) return;
-    const updated = { ...habits, waterGlasses: n };
-    setHabits(updated as HabitLog);
-    saveHabits(updated as HabitLog);
+    persist({ ...habits, waterGlasses: n });
   }
 
   function getDotColor(date: string) {
@@ -153,7 +162,7 @@ export default function HabitsPage() {
           ))}
         </div>
         <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
-          Target: 8 glasses (2.5–3L) — crucial for eczema in Delhi summer
+          Target: 8 glasses. Easy to forget in winter, so keep warm water nearby
         </p>
       </div>
 

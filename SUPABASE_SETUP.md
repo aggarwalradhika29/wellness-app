@@ -39,3 +39,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5c....
 ## That's it!
 Your data now persists across all devices forever.
 The app automatically falls back to localStorage if Supabase is not configured.
+
+## Private login
+The app has one login and no sign-up page.
+
+1. In Supabase, go to **Authentication → Users → Add user**. Enter your email and password and turn on auto-confirm.
+2. For an existing database, run `lib/secure-existing-database.sql` once in the SQL Editor.
+3. Turn off **Allow new users to sign up** under Authentication settings.

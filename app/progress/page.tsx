@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getHabits, getWeightLogs, getSleepLogs, getLast7Days, getStreak, HabitLog, WeightLog, SleepLog } from "@/lib/storage";
+import { getHabits, getWeightLogs, getSleepLogs, getLast7Days, calcStreak, HabitLog, WeightLog, SleepLog } from "@/lib/db";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function ProgressPage() {
@@ -12,11 +12,13 @@ export default function ProgressPage() {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    setHabits(getHabits());
-    setWeights(getWeightLogs());
-    setSleeps(getSleepLogs());
-    setStreak(getStreak());
     setLast7(getLast7Days());
+    Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]).then(([h, w, s]) => {
+      setHabits(h);
+      setWeights(w);
+      setSleeps(s);
+      setStreak(calcStreak(h));
+    });
     setIsDark(document.documentElement.classList.contains("dark"));
     const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")));
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
@@ -152,7 +154,7 @@ export default function ProgressPage() {
         </div>
       )}
 
-      {totalDaysTracked === 0 && (
+      {totalDaysTracked === 0 && weights.length === 0 && sleeps.length === 0 && (
         <div className="card" style={{ padding: 32, textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
           <p style={{ fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>No data yet</p>

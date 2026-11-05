@@ -1,22 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getTodayHabits, getStreak, getWeightLogs, getSleepLogs, HabitLog } from "@/lib/storage";
+import { getHabits, todayHabits, calcStreak, getWeightLogs, getSleepLogs, HabitLog } from "@/lib/db";
 
 const HABITS = [
   { key: "workout", label: "Workout", icon: "💪" },
   { key: "skincareAM", label: "Skincare AM", icon: "🌅" },
   { key: "skincarePM", label: "Skincare PM", icon: "🌙" },
-  { key: "dinner730", label: "Dinner by 7:30", icon: "🍛" },
+  { key: "dinner730", label: "Dinner by 8", icon: "🍛" },
   { key: "noPhoneInBed", label: "No phone in bed", icon: "📵" },
 ];
 
 const TIPS = [
-  "Dinner by 7:30 PM. Phone outside the room before sleeping. These two habits will change everything.",
-  "Morning light within 15 min of waking is the fastest way to fix your sleep schedule.",
-  "Shower immediately after every workout — sweat on skin is a top eczema trigger in summer.",
+  "Keep showers short and lukewarm. Hot water feels great in winter, but it dries out eczema-prone skin.",
   "Apply CeraVe on damp skin within 3 min of stepping out of the shower.",
-  "4-7-8 breathing in bed: inhale 4s, hold 7s, exhale 8s. Repeat 4 times. Powerful sleep aid.",
+  "Check AQI before your walk. Above 200, stay indoors and use the stairs instead.",
+  "Wear soft cotton under wool, and sit a little back from the heater.",
+  "Open the curtains when you wake up, and get outside around midday when you can.",
+  "4-7-8 breathing in bed: inhale 4s, hold 7s, exhale 8s. Repeat 4 times.",
 ];
 
 function greeting() {
@@ -36,15 +37,17 @@ export default function Dashboard() {
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
 
   useEffect(() => {
-    setHabits(getTodayHabits());
-    setStreak(getStreak());
-    const wt = getWeightLogs();
-    if (wt.length) setLastWeight(wt[wt.length - 1].weight);
-    const sl = getSleepLogs();
-    if (sl.length) {
-      const last = sl[sl.length - 1];
-      setLastSleep(`${last.sleepTime} → ${last.wakeTime}`);
+    async function load() {
+      const [all, wt, sl] = await Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]);
+      setHabits(todayHabits(all));
+      setStreak(calcStreak(all));
+      if (wt.length) setLastWeight(wt[wt.length - 1].weight);
+      if (sl.length) {
+        const last = sl[sl.length - 1];
+        setLastSleep(`${last.sleepTime} → ${last.wakeTime}`);
+      }
     }
+    load();
   }, []);
 
   if (!habits) return null;
