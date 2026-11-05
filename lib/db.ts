@@ -2,6 +2,7 @@
 // database's row-level security policies enforce that on the server.
 
 import { supabase } from './supabase'
+import { habitScore } from './habits'
 
 async function uid(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession()
@@ -18,7 +19,27 @@ function check(res: { error: { message: string } | null }): void {
   if (res.error) throw new Error(res.error.message)
 }
 
-export function todayStr(): string { return new Date().toISOString().split('T')[0] }
+// The day rolls over at 4 AM, so late-night entries belong to the day you're
+// still finishing, not the next calendar date.
+const DAY_ROLLOVER_MS = 4 * 60 * 60 * 1000
+
+function toDateStr(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+export function dateFromStr(date: string): Date {
+  const [y, m, d] = date.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function addDays(date: string, days: number): string {
+  const d = dateFromStr(date)
+  d.setDate(d.getDate() + days)
+  return toDateStr(d)
+}
+
+export function todayStr(): string { return toDateStr(new Date(Date.now() - DAY_ROLLOVER_MS)) }
 
 // ─── HABIT LOGS ─────────────────────────────────────────────────────────────
 
@@ -177,17 +198,21 @@ export async function importLocalData(): Promise<number> {
 
 // ─── STREAK + UTILS ──────────────────────────────────────────────────────────
 
+const STREAK_MIN_HABITS = 3
+
+// Today only adds to the streak once it qualifies; until then it can't break it.
 export function calcStreak(habits: HabitLog[]): number {
-  const sorted = [...habits].sort((a,b) => b.date.localeCompare(a.date))
-  if (!sorted.length) return 0
-  let streak = 0, checkDate = todayStr()
-  for (const h of sorted) {
-    if (h.date !== checkDate) break
-    const done = [h.workout, h.skincareAM, h.skincarePM, h.dinner730, h.noPhoneInBed].filter(Boolean).length
-    if (done >= 3) streak++
-    else break
-    const d = new Date(checkDate); d.setDate(d.getDate() - 1)
-    checkDate = d.toISOString().split('T')[0]
+  const byDate = new Map(habits.map(h => [h.date, h]))
+  const qualifies = (date: string) => {
+    const log = byDate.get(date)
+    return !!log && habitScore(log) >= STREAK_MIN_HABITS
+  }
+  let streak = 0
+  let date = todayStr()
+  if (!qualifies(date)) date = addDays(date, -1)
+  while (qualifies(date)) {
+    streak++
+    date = addDays(date, -1)
   }
   return streak
 }
@@ -206,11 +231,8 @@ export function bmiCategory(bmi: number): { label: string; color: string } {
 
 export function getDateRange(range: 'week' | 'month' | 'year'): { start: string; end: string } {
   const end = todayStr()
-  const d = new Date()
-  if (range === 'week') d.setDate(d.getDate() - 6)
-  else if (range === 'month') d.setDate(d.getDate() - 29)
-  else d.setFullYear(d.getFullYear() - 1)
-  return { start: d.toISOString().split('T')[0], end }
+  const days = { week: 6, month: 29, year: 365 }[range]
+  return { start: addDays(end, -days), end }
 }
 
 export function filterByRange<T extends { date: string }>(items: T[], range: 'week' | 'month' | 'year'): T[] {
@@ -219,8 +241,6 @@ export function filterByRange<T extends { date: string }>(items: T[], range: 'we
 }
 
 export function getLast7Days(): string[] {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().split('T')[0]
-  })
+  const today = todayStr()
+  return Array.from({ length: 7 }, (_, i) => addDays(today, i - 6))
 }

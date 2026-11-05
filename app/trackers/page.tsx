@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getSleepLogs, saveSleepLog, getWeightLogs, saveWeightLog, getMealLogs, saveMealLog, getTodayMeals, todayStr, filterByRange, SleepLog, WeightLog, MealLog } from "@/lib/db";
+import { getSleepLogs, saveSleepLog, getWeightLogs, saveWeightLog, getMealLogs, saveMealLog, getTodayMeals, todayStr, filterByRange, dateFromStr, SleepLog, WeightLog, MealLog } from "@/lib/db";
+import { useLoad } from "@/lib/useLoad";
+import { SAVE_FAILED, useNotice } from "@/components/AuthGate";
+import LoadError from "@/components/LoadError";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from "recharts";
 
 type Tab = "sleep" | "weight" | "meals";
@@ -26,25 +29,36 @@ export default function TrackersPage() {
   // Meals
   const [meals, setMeals] = useState<MealLog>({ date: todayStr() });
 
+  const showNotice = useNotice();
+
+  const { failed, retry } = useLoad(async () => {
+    const [sl, wl, ml] = await Promise.all([getSleepLogs(), getWeightLogs(), getTodayMeals()]);
+    setAllSleep(sl);
+    setAllWeights(wl);
+    setMeals(ml);
+    const todayLog = sl.find(s => s.date === todayStr());
+    if (todayLog) { setSleepTime(todayLog.sleepTime); setWakeTime(todayLog.wakeTime); setQuality(todayLog.quality); setSleepNotes(todayLog.notes || ""); }
+    const todayWeight = wl.find(w => w.date === todayStr());
+    setWeight(todayWeight ? String(todayWeight.weight) : "");
+  });
+
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
     const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")));
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-
-    async function load() {
-      const [sl, wl, ml] = await Promise.all([getSleepLogs(), getWeightLogs(), getTodayMeals()]);
-      setAllSleep(sl);
-      setAllWeights(wl);
-      setMeals(ml);
-      const todayLog = sl.find(s => s.date === todayStr());
-      if (todayLog) { setSleepTime(todayLog.sleepTime); setWakeTime(todayLog.wakeTime); setQuality(todayLog.quality); setSleepNotes(todayLog.notes || ""); }
-      if (wl.length) setWeight(String(wl[wl.length - 1].weight));
-    }
-    load();
     return () => obs.disconnect();
   }, []);
 
-  function notify() { setSaved(true); setTimeout(() => setSaved(false), 1500); }
+  async function save(action: () => Promise<void>) {
+    try {
+      await action();
+    } catch {
+      showNotice(SAVE_FAILED);
+      return;
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  }
 
   function sleepDuration(s: string, w: string): string {
     const [sh, sm] = s.split(":").map(Number);
@@ -63,7 +77,7 @@ export default function TrackersPage() {
   }
 
   function xLabel(date: string, r: Range): string {
-    const d = new Date(date);
+    const d = dateFromStr(date);
     if (r === "week") return d.toLocaleDateString("en-IN", { weekday: "short" }).slice(0, 2);
     if (r === "month") return d.getDate().toString();
     return d.toLocaleDateString("en-IN", { month: "short" });
@@ -79,7 +93,7 @@ export default function TrackersPage() {
         if (!acc[key] || w.date > acc[key].date) acc[key] = w;
         return acc;
       }, {} as Record<string, WeightLog>))
-      .map(w => ({ day: new Date(w.date).toLocaleDateString("en-IN", { month: "short" }), weight: w.weight }))
+      .map(w => ({ day: dateFromStr(w.date).toLocaleDateString("en-IN", { month: "short" }), weight: w.weight }))
     : filteredWeights.map(w => ({ day: xLabel(w.date, range), weight: w.weight }));
 
   const sleepChartData = filteredSleep.map(s => ({
@@ -97,6 +111,10 @@ export default function TrackersPage() {
     { key: "weight", icon: "⚖️", label: "Weight" },
     { key: "meals", icon: "🍽️", label: "Meals" },
   ];
+
+  if (failed) return <LoadError onRetry={retry} />;
+
+  const weightChange = allWeights.length ? allWeights[allWeights.length - 1].weight - allWeights[0].weight : 0;
 
   return (
     <div style={{ padding: "24px 16px" }}>
@@ -147,10 +165,10 @@ export default function TrackersPage() {
             </div>
             <textarea value={sleepNotes} onChange={e => setSleepNotes(e.target.value)} placeholder="Notes (optional)..."
               style={{ ...inputStyle, resize: "none", height: 52, marginBottom: 12 }} />
-            <button onClick={async () => {
+            <button onClick={() => save(async () => {
               await saveSleepLog({ date: todayStr(), sleepTime, wakeTime, quality, notes: sleepNotes });
-              setAllSleep(await getSleepLogs()); notify();
-            }} style={{ width: "100%", background: "var(--accent)", color: "white", fontWeight: 700, padding: 12, borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>
+              setAllSleep(await getSleepLogs());
+            })} style={{ width: "100%", background: "var(--accent)", color: "white", fontWeight: 700, padding: 12, borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>
               Save Sleep Log
             </button>
           </div>
@@ -191,7 +209,7 @@ export default function TrackersPage() {
               {[...allSleep].reverse().slice(0, 5).map(s => (
                 <div key={s.date} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--card-border)" }}>
                   <div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text)" }}>{new Date(s.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text)" }}>{dateFromStr(s.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</span>
                     <span style={{ fontSize: 11, color: "var(--text-faint)", marginLeft: 6 }}>{s.sleepTime} → {s.wakeTime}</span>
                   </div>
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -217,11 +235,10 @@ export default function TrackersPage() {
                   placeholder="66.0" step="0.1"
                   style={{ ...inputStyle, fontSize: 28, fontWeight: 900, padding: "10px 14px" }} />
               </div>
-              <button onClick={async () => {
-                if (!weight) return;
+              <button onClick={() => { if (weight) save(async () => {
                 await saveWeightLog({ date: todayStr(), weight: parseFloat(weight) });
-                setAllWeights(await getWeightLogs()); notify();
-              }} style={{ background: "var(--accent)", color: "white", fontWeight: 700, padding: "12px 20px", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>Log</button>
+                setAllWeights(await getWeightLogs());
+              }); }} style={{ background: "var(--accent)", color: "white", fontWeight: 700, padding: "12px 20px", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>Log</button>
             </div>
             {allWeights.length > 0 && (
               <div style={{ background: "var(--bg2)", borderRadius: 12, padding: 14 }}>
@@ -229,7 +246,7 @@ export default function TrackersPage() {
                   {[
                     { label: "Start", val: `${allWeights[0].weight} kg`, color: "var(--text-muted)" },
                     { label: "Current", val: `${allWeights[allWeights.length-1].weight} kg`, color: "var(--accent)" },
-                    { label: "Lost", val: `${(allWeights[0].weight - allWeights[allWeights.length-1].weight).toFixed(1)} kg`, color: "var(--green)" },
+                    { label: weightChange > 0 ? "Gained" : "Lost", val: `${Math.abs(weightChange).toFixed(1)} kg`, color: weightChange > 0 ? "#E8C45A" : "var(--green)" },
                   ].map(({ label, val, color }) => (
                     <div key={label} style={{ textAlign: "center" }}>
                       <p style={{ fontSize: 10, color: "var(--text-faint)", margin: 0 }}>{label}</p>
@@ -268,7 +285,7 @@ export default function TrackersPage() {
               <h3 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 12 }}>Log History</h3>
               {[...allWeights].reverse().slice(0, 10).map(w => (
                 <div key={w.date} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--card-border)" }}>
-                  <span style={{ fontSize: 12, color: "var(--text-faint)" }}>{new Date(w.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-faint)" }}>{dateFromStr(w.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</span>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{w.weight} kg</span>
                 </div>
               ))}
@@ -292,7 +309,7 @@ export default function TrackersPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div className="card" style={{ padding: 16 }}>
             <h2 style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 4 }}>Today&apos;s Meal Log</h2>
-            <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 14 }}>{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })}</p>
+            <p style={{ fontSize: 12, color: "var(--text-faint)", marginBottom: 14 }}>{dateFromStr(todayStr()).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })}</p>
             {[
               { key: "breakfast", label: "🥣 Breakfast", placeholder: "Moong dal chilla, poha with peanuts..." },
               { key: "lunch", label: "🍛 Lunch", placeholder: "Dal + roti + sabzi + salad + curd..." },
@@ -305,7 +322,7 @@ export default function TrackersPage() {
                   placeholder={field.placeholder} style={{ ...inputStyle, resize: "none", height: 52 }} />
               </div>
             ))}
-            <button onClick={async () => { await saveMealLog(meals); notify(); }}
+            <button onClick={() => save(() => saveMealLog({ ...meals, date: todayStr() }))}
               style={{ width: "100%", background: "var(--accent)", color: "white", fontWeight: 700, padding: 12, borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14 }}>
               Save Meal Log
             </button>

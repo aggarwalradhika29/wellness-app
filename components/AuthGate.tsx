@@ -1,8 +1,16 @@
 "use client";
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { createContext, FormEvent, ReactNode, useContext, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { importLocalData } from "@/lib/db";
+
+export const SAVE_FAILED = "That didn't save. Check your connection and try again.";
+
+const NoticeContext = createContext<(message: string) => void>(() => {});
+
+export function useNotice() {
+  return useContext(NoticeContext);
+}
 
 const input = {
   width: "100%", padding: 12, borderRadius: 12, fontSize: 14, marginBottom: 10,
@@ -63,19 +71,12 @@ export default function AuthGate({ children }: { children: ReactNode }) {
       .finally(() => setReady(true));
   }, [userId]);
 
-  // Pages let failed loads and saves reject, so they all surface here.
-  useEffect(() => {
-    const onFail = () => setNotice("Something didn't load or save. Check your connection and try again.");
-    window.addEventListener("unhandledrejection", onFail);
-    return () => window.removeEventListener("unhandledrejection", onFail);
-  }, []);
-
   if (session === undefined) return null;
   if (!session) return <Login />;
   if (!ready) return null;
 
   return (
-    <>
+    <NoticeContext.Provider value={setNotice}>
       {notice && (
         <button onClick={() => setNotice("")} role="status" style={{
           position: "fixed", top: 12, left: 16, right: 16, zIndex: 60, maxWidth: 480, margin: "0 auto",
@@ -84,6 +85,6 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         }}>{notice}</button>
       )}
       {children}
-    </>
+    </NoticeContext.Provider>
   );
 }

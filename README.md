@@ -1,7 +1,7 @@
 # 🌿 My Wellness App
 
 A personal wellness tracker — fitness, sleep, skincare & diet plan.
-Built with Next.js 14 + Tailwind CSS. Data is stored in Supabase behind a private login.
+Built with Next.js 16, React 19, Tailwind CSS and Supabase. Data is stored in Supabase behind a private login, with row-level security on every table.
 
 ## Features
 - ✅ Daily habit tracker (workout, skincare AM/PM, dinner time, phone habits)
@@ -27,8 +27,9 @@ Built with Next.js 14 + Tailwind CSS. Data is stored in Supabase behind a privat
 1. Go to [vercel.com](https://vercel.com) → sign in with GitHub
 2. Click **Add New → Project**
 3. Select your `wellness-app` repository
-4. Click **Deploy** (no settings to change — Vercel auto-detects Next.js)
-5. Wait ~2 minutes → you get a live URL like `wellness-app-xyz.vercel.app`
+4. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` under **Environment Variables** (see [SUPABASE_SETUP.md](SUPABASE_SETUP.md))
+5. Click **Deploy**
+6. Wait ~2 minutes → you get a live URL like `wellness-app-xyz.vercel.app`
 
 ### Step 3: Add to iPhone Home Screen
 1. Open the URL in Safari on your iPhone
@@ -46,8 +47,11 @@ Built with Next.js 14 + Tailwind CSS. Data is stored in Supabase behind a privat
 
 ## 💻 Run Locally (optional)
 
+Set up a Supabase project first ([SUPABASE_SETUP.md](SUPABASE_SETUP.md)), then:
+
 ```bash
 npm install
+cp .env.local.example .env.local   # add your Supabase URL and anon key
 npm run dev
 # Opens at http://localhost:3000
 ```
@@ -55,11 +59,11 @@ npm run dev
 ---
 
 ## Tech Stack
-- **Next.js 14** (App Router)
+- **Next.js 16** (App Router) with **React 19**
 - **Tailwind CSS**
 - **Recharts** (progress charts)
-- **localStorage** (all data stays on your device)
+- **Supabase** (Postgres, Auth and row-level security)
 
 ---
 
-*Built for personal use. All data is private and stored only on your device.*
+*Built for personal use. Each row is readable only by the signed-in owner.*

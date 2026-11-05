@@ -38,7 +38,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5c....
 
 ## That's it!
 Your data now persists across all devices forever.
-The app automatically falls back to localStorage if Supabase is not configured.
+The app requires these two variables and won't start without them.
 
 ## Private login
 The app has one login and no sign-up page.

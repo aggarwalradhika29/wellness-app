@@ -1,15 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { getHabits, todayHabits, calcStreak, getWeightLogs, getSleepLogs, HabitLog } from "@/lib/db";
-
-const HABITS = [
-  { key: "workout", label: "Workout", icon: "💪" },
-  { key: "skincareAM", label: "Skincare AM", icon: "🌅" },
-  { key: "skincarePM", label: "Skincare PM", icon: "🌙" },
-  { key: "dinner730", label: "Dinner by 8", icon: "🍛" },
-  { key: "noPhoneInBed", label: "No phone in bed", icon: "📵" },
-];
+import { getHabits, todayHabits, calcStreak, getWeightLogs, getSleepLogs, dateFromStr, todayStr, HabitLog } from "@/lib/db";
+import { HABITS, habitScore } from "@/lib/habits";
+import { useLoad } from "@/lib/useLoad";
+import LoadError from "@/components/LoadError";
 
 const TIPS = [
   "Keep showers short and lukewarm. Hot water feels great in winter, but it dries out eczema-prone skin.",
@@ -36,25 +31,23 @@ export default function Dashboard() {
   const [lastSleep, setLastSleep] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
 
-  useEffect(() => {
-    async function load() {
-      const [all, wt, sl] = await Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]);
-      setHabits(todayHabits(all));
-      setStreak(calcStreak(all));
-      if (wt.length) setLastWeight(wt[wt.length - 1].weight);
-      if (sl.length) {
-        const last = sl[sl.length - 1];
-        setLastSleep(`${last.sleepTime} → ${last.wakeTime}`);
-      }
+  const { failed, retry } = useLoad(async () => {
+    const [all, wt, sl] = await Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]);
+    setHabits(todayHabits(all));
+    setStreak(calcStreak(all));
+    if (wt.length) setLastWeight(wt[wt.length - 1].weight);
+    if (sl.length) {
+      const last = sl[sl.length - 1];
+      setLastSleep(`${last.sleepTime} → ${last.wakeTime}`);
     }
-    load();
-  }, []);
+  });
 
+  if (failed) return <LoadError onRetry={retry} />;
   if (!habits) return null;
 
-  const completedCount = HABITS.filter(h => habits[h.key as keyof HabitLog]).length;
+  const completedCount = habitScore(habits);
   const pct = Math.round((completedCount / HABITS.length) * 100);
-  const date = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+  const date = dateFromStr(todayStr()).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <div style={{ padding: "24px 16px" }}>
@@ -69,7 +62,7 @@ export default function Dashboard() {
         {[
           { val: streak, label: "Streak 🔥", color: "var(--accent)" },
           { val: lastWeight ? `${lastWeight}kg` : "—", label: "Weight", color: "var(--blue)" },
-          { val: `${completedCount}/5`, label: "Habits", color: "var(--green)" },
+          { val: `${completedCount}/${HABITS.length}`, label: "Habits", color: "var(--green)" },
         ].map(({ val, label, color }) => (
           <div key={label} className="card" style={{ padding: "12px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 22, fontWeight: 900, color }}>{val}</div>
@@ -88,12 +81,12 @@ export default function Dashboard() {
           <div style={{ width: `${pct}%`, height: 6, background: "var(--accent)", borderRadius: 99, transition: "width 0.4s" }} />
         </div>
         {HABITS.map(h => {
-          const done = !!habits[h.key as keyof HabitLog];
+          const done = habits[h.key];
           return (
             <div key={h.key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <span style={{ fontSize: 16 }}>{h.icon}</span>
               <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: done ? "var(--text-faint)" : "var(--text)", textDecoration: done ? "line-through" : "none" }}>
-                {h.label}
+                {h.shortLabel}
               </span>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99,

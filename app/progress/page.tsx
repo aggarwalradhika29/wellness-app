@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getHabits, getWeightLogs, getSleepLogs, getLast7Days, calcStreak, HabitLog, WeightLog, SleepLog } from "@/lib/db";
+import { getHabits, getWeightLogs, getSleepLogs, getLast7Days, calcStreak, dateFromStr, HabitLog, WeightLog, SleepLog } from "@/lib/db";
+import { HABITS, habitScore } from "@/lib/habits";
+import { useLoad } from "@/lib/useLoad";
+import LoadError from "@/components/LoadError";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function ProgressPage() {
@@ -11,23 +14,21 @@ export default function ProgressPage() {
   const [last7, setLast7] = useState<string[]>([]);
   const [isDark, setIsDark] = useState(true);
 
-  useEffect(() => {
+  const { failed, retry } = useLoad(async () => {
+    const [h, w, s] = await Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]);
     setLast7(getLast7Days());
-    Promise.all([getHabits(), getWeightLogs(), getSleepLogs()]).then(([h, w, s]) => {
-      setHabits(h);
-      setWeights(w);
-      setSleeps(s);
-      setStreak(calcStreak(h));
-    });
+    setHabits(h);
+    setWeights(w);
+    setSleeps(s);
+    setStreak(calcStreak(h));
+  });
+
+  useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
     const obs = new MutationObserver(() => setIsDark(document.documentElement.classList.contains("dark")));
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => obs.disconnect();
   }, []);
-
-  function habitScore(h: HabitLog) {
-    return [h.workout, h.skincareAM, h.skincarePM, h.dinner730, h.noPhoneInBed].filter(Boolean).length;
-  }
 
   const weekData = last7.map(date => {
     const h = habits.find(x => x.date === date);
@@ -41,7 +42,7 @@ export default function ProgressPage() {
       sleepHrs = Math.round((mins / 60) * 10) / 10;
     }
     return {
-      day: new Date(date).toLocaleDateString("en-IN", { weekday: "short" }).slice(0, 2),
+      day: dateFromStr(date).toLocaleDateString("en-IN", { weekday: "short" }).slice(0, 2),
       habits: h ? habitScore(h) : 0,
       water: h ? h.waterGlasses : 0,
       sleep: sleepHrs,
@@ -49,16 +50,18 @@ export default function ProgressPage() {
   });
 
   const weightData = weights.slice(-14).map(w => ({
-    day: new Date(w.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+    day: dateFromStr(w.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
     weight: w.weight,
   }));
 
   const totalDaysTracked = habits.length;
-  const perfectDays = habits.filter(h => habitScore(h) === 5).length;
+  const perfectDays = habits.filter(h => habitScore(h) === HABITS.length).length;
   const avgHabits = habits.length ? (habits.reduce((s, h) => s + habitScore(h), 0) / habits.length).toFixed(1) : "0";
   const avgWater = habits.length ? (habits.reduce((s, h) => s + h.waterGlasses, 0) / habits.length).toFixed(1) : "0";
 
   const chartColors = { grid: isDark ? "#2E2C2A" : "#F0EAE2", text: isDark ? "#6A6058" : "#A09890", tooltip: isDark ? "#1E1C1A" : "#fff" };
+
+  if (failed) return <LoadError onRetry={retry} />;
 
   return (
     <div style={{ padding: "24px 16px" }}>
@@ -70,7 +73,7 @@ export default function ProgressPage() {
           { val: streak, label: "Streak 🔥", color: "var(--accent)" },
           { val: perfectDays, label: "Perfect Days ⭐", color: "var(--green)" },
           { val: totalDaysTracked, label: "Days Tracked", color: "var(--blue)" },
-          { val: `${avgHabits}/5`, label: "Avg Habits", color: "#9B7EC8" },
+          { val: `${avgHabits}/${HABITS.length}`, label: "Avg Habits", color: "#9B7EC8" },
         ].map(({ val, label, color }) => (
           <div key={label} className="card" style={{ padding: "14px 12px", textAlign: "center" }}>
             <div style={{ fontSize: 28, fontWeight: 900, color }}>{val}</div>
@@ -88,9 +91,9 @@ export default function ProgressPage() {
               <div style={{ width: "100%", height: 80, display: "flex", alignItems: "flex-end" }}>
                 <div style={{
                   width: "100%", borderRadius: "6px 6px 0 0",
-                  height: `${(d.habits / 5) * 100}%`,
+                  height: `${(d.habits / HABITS.length) * 100}%`,
                   minHeight: d.habits > 0 ? 4 : 0,
-                  background: d.habits === 5 ? "var(--green)" : d.habits >= 3 ? "var(--accent)" : d.habits > 0 ? "#E8C45A" : "var(--bg2)",
+                  background: d.habits === HABITS.length ? "var(--green)" : d.habits >= 3 ? "var(--accent)" : d.habits > 0 ? "#E8C45A" : "var(--bg2)",
                   transition: "height 0.4s",
                 }} />
               </div>

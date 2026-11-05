@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getUserProfile, saveUserProfile, getWeightLogs, calcBMI, bmiCategory, UserProfile, WeightLog } from "@/lib/db";
+import { useLoad } from "@/lib/useLoad";
+import { SAVE_FAILED, useNotice } from "@/components/AuthGate";
+import LoadError from "@/components/LoadError";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>({ heightCm: 0, startWeight: 66, goalWeight: undefined, age: 22 });
@@ -9,19 +12,22 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      const p = await getUserProfile();
-      if (p) setProfile(p);
-      const w = await getWeightLogs();
-      if (w.length) setLatestWeight(w[w.length - 1].weight);
-      setLoading(false);
-    }
-    load();
-  }, []);
+  const showNotice = useNotice();
+
+  const { failed, retry } = useLoad(async () => {
+    const [p, w] = await Promise.all([getUserProfile(), getWeightLogs()]);
+    if (p) setProfile(p);
+    if (w.length) setLatestWeight(w[w.length - 1].weight);
+    setLoading(false);
+  });
 
   async function handleSave() {
-    await saveUserProfile(profile);
+    try {
+      await saveUserProfile(profile);
+    } catch {
+      showNotice(SAVE_FAILED);
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   }
@@ -35,6 +41,7 @@ export default function ProfilePage() {
   const inputStyle = { width: "100%", border: "1px solid var(--input-border)", borderRadius: 12, padding: "12px 14px", fontSize: 16, fontWeight: 700, outline: "none", background: "var(--input-bg)", color: "var(--text)" };
   const labelStyle = { fontSize: 11, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase" as const, letterSpacing: 1, display: "block", marginBottom: 6 };
 
+  if (failed) return <LoadError onRetry={retry} />;
   if (loading) return <div style={{ padding: 32, textAlign: "center", color: "var(--text-faint)" }}>Loading...</div>;
 
   return (
